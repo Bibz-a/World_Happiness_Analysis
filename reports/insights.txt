@@ -1,0 +1,10 @@
+======================================================================
+WORLD HAPPINESS REPORT - DATA-DRIVEN INSIGHTS
+======================================================================
+
+1. Found 6 countries with high GDP (≥1.0) but low happiness (≤5.0): Greece, Lebanon, Hungary, Iran, Bulgaria
+
+2. Moderate positive correlation (0.568) between Freedom and Happiness Score
+
+3. Found 13 countries with high generosity (≥0.3) but low happiness (≤5.0)
+
