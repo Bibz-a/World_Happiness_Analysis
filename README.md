@@ -1,290 +1,201 @@
-# World Happiness Report Dashboard
+# World Happiness Report – Python & Streamlit Dashboard
 
-A comprehensive data analytics project that analyzes the World Happiness Report dataset to uncover global happiness trends, socioeconomic factors, regional differences, and time-based changes. The project generates an analytical dashboard using clean, modular, object-oriented Python code.
+This project analyzes the **World Happiness** dataset and lets you explore it in two ways:
 
-## 📋 Project Overview
+- a **Streamlit web dashboard** (interactive, in your browser)
+- a **command‑line script** that runs the full pipeline and saves charts
 
-This project provides a complete data analytics pipeline for the World Happiness Report dataset, including:
+The code is kept simple and uses:
+`pandas`, `numpy`, `matplotlib`, `scipy`, and `streamlit` (plus optional `seaborn`).
 
-- **Data Loading & Cleaning**: Robust CSV loading with missing value handling
-- **Statistical Analysis**: Country comparisons, regional analysis, correlation studies
-- **Composite Index Calculation**: Custom happiness index using normalized indicators
-- **Visualizations**: Multiple matplotlib charts for data exploration
-- **Rule-Based Insights**: Automated insight generation from data patterns
+---
 
-## 🏗️ Project Structure
+## 📂 Project Structure
 
-```
+```text
 world_happiness_dashboard/
 │
 ├── data/
-│   ├── raw/                    # Original dataset
-│   └── processed/              # Cleaned and processed data
+│   ├── raw/                    # Original dataset (input)
+│   └── processed/              # Cleaned data (output)
+│
+├── reports/                    # Saved plots (PNG files) + insights.txt
 │
 ├── src/
-│   ├── data_loader.py          # CSV data loading module
-│   ├── data_cleaner.py         # Data cleaning and preprocessing
-│   ├── analyzer.py              # Statistical analysis functions
-│   ├── index_calculator.py     # Composite happiness index calculation
-│   ├── visualizer.py           # Matplotlib visualization functions
-│   ├── insight_engine.py       # Rule-based insight generation
-│   └── main.py                 # Main program entry point
+│   ├── data_loader.py          # Load CSV into a DataFrame
+│   ├── data_cleaner.py         # Basic cleaning utilities
+│   ├── analyzer.py             # Simple analysis helpers
+│   ├── index_calculator.py     # Composite happiness index
+│   ├── visualizer.py           # Matplotlib plots (used by CLI)
+│   └── insight_engine.py       # Rule‑based insights
+│   └── main.py                 # Command‑line pipeline
 │
-├── reports/                    # Generated visualizations and insights
-│
-├── streamlit_app.py           # Interactive Streamlit web application
+├── streamlit_app.py            # Interactive Streamlit dashboard
 ├── requirements.txt            # Python dependencies
 └── README.md                   # This file
 ```
 
-## 🚀 Setup Instructions
+The same core modules (`data_loader`, `data_cleaner`, `analyzer`, `index_calculator`,
+`insight_engine`) are reused by both the CLI script and the Streamlit app.
 
-### Prerequisites
+---
 
-- Python 3.8 or higher
-- pip (Python package installer)
+## 🔧 Setup
 
-### Installation
+1. Open a terminal in the project root:
 
-1. **Clone or navigate to the project directory:**
    ```bash
    cd world_happiness_dashboard
    ```
 
-2. **Install required dependencies:**
+2. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Ensure your dataset is in place:**
-   - Place `WorldHappiness.csv` in the `data/raw/` directory
-   - The dataset should contain columns: Country, Region, Happiness Rank, Happiness Score, and various indicators
+3. Put the dataset in place:
 
-## 📊 Usage
+   - Copy `WorldHappiness.csv` into:  
+     `data/raw/WorldHappiness.csv`
 
-### 🌐 Running the Interactive Streamlit Dashboard (Recommended)
+The CSV should have at least:
 
-To launch the interactive web-based dashboard:
+- `Country`, `Region`, `Happiness Score`, and ideally:
+- `Happiness Rank`, `Economy (GDP per Capita)`, `Family`,
+  `Health (Life Expectancy)`, `Freedom`,
+  `Trust (Government Corruption)`, `Generosity`,
+  and optionally `Year`.
+
+---
+
+## 🌐 Option 1 – Run the Streamlit Dashboard (Recommended)
+
+Start the interactive dashboard:
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
-This will:
-- Open a web browser with the interactive dashboard
-- Provide a user-friendly GUI with multiple pages
-- Allow real-time filtering and exploration
-- Display interactive visualizations
-- Generate insights on-demand
+What happens:
 
-**Dashboard Features:**
-- 🏠 **Overview**: Key metrics, top/bottom countries, GDP vs Happiness
-- 📈 **Country Analysis**: Detailed country views and comparisons
-- 🌎 **Regional Analysis**: Regional statistics and distributions
-- 📊 **Correlation Analysis**: Interactive correlation heatmaps
-- 🔍 **Composite Index**: Custom happiness index calculator
-- 💡 **Insights**: Rule-based data insights
-- 🔬 **Data Explorer**: Interactive data table with search and filters
+1. `streamlit_app.py` calls `load_and_clean_data()` (cached with `@st.cache_data`):
+   - Uses `DataLoader` to read `data/raw/WorldHappiness.csv`
+   - Uses `DataCleaner` to:
+     - standardize country/region names  
+     - fill missing numeric values  
+     - convert `Year` to numeric (if present)  
+     - drop duplicates
+2. The cleaned DataFrame is passed to the different pages below.
 
-### 📝 Running the Complete Pipeline (Command Line)
+### Dashboard pages
 
-To run the entire analytics pipeline from command line:
+- **🏠 Overview**
+  - Key metrics: average happiness, total countries, highest/lowest scores
+  - Top N and bottom N countries by `Happiness Score` (bar charts)
+  - Scatter: `Economy (GDP per Capita)` vs `Happiness Score`
+
+- **📈 Country Analysis**
+  - Pick a country from the sidebar
+  - Shows metrics for that country (happiness, GDP, life expectancy, freedom)
+  - Bar chart of the main indicator scores
+  - Country comparison table for the top N happiest countries
+
+- **🌎 Regional Analysis**
+  - Uses `Analyzer.regional_average_happiness()` to compute:
+    - average happiness, standard deviation, and count per region
+  - Bar chart of average happiness by region + table of stats
+  - Histogram comparing score distributions for selected regions
+
+- **📊 Correlation Analysis**
+  - Uses `Analyzer.correlation_analysis(method="both")` on numeric columns
+  - Pearson and Spearman correlation matrices (heatmaps)
+  - Bar chart for correlations with `Happiness Score`
+  - Correlation table
+
+- **🔍 Composite Index**
+  - Uses `IndexCalculator` to compute `Composite_Happiness_Index` (0–10) and `Composite_Rank`
+  - Optional sliders to set custom weights for:
+    - Economy, Family, Health, Freedom, Trust, Generosity
+  - Shows metrics for the index (mean, median, std, range)
+  - Chart comparing original happiness score vs composite index
+  - Table with detailed comparison (optionally includes original happiness rank)
+
+- **💡 Insights**
+  - Uses `InsightEngine.generate_all_insights()` to create short text insights, e.g.:
+    - high GDP but low happiness
+    - stable vs volatile happiness over years
+    - score outliers
+    - freedom–happiness correlation
+    - high generosity but low happiness
+  - Also shows:
+    - a table of “high GDP, low happiness” countries (if any)
+    - a table of happiness outliers
+
+- **🔬 Data Explorer**
+  - Choose which columns to show
+  - Search by country name
+  - Sort by happiness score or country
+  - Download the filtered table as CSV
+  - See summary statistics for selected numeric columns
+
+---
+
+## 🖥️ Option 2 – Run the Command‑Line Pipeline
+
+You can run the whole analysis from the terminal without the UI:
 
 ```bash
 python src/main.py
 ```
 
-This will:
-1. Load the dataset from `data/raw/WorldHappiness.csv`
-2. Clean and preprocess the data
-3. Perform various analyses
-4. Calculate composite happiness index
-5. Generate visualizations
-6. Generate and save insights
+`src/main.py` does, in order (matching the code):
 
-### Using Individual Modules
+1. **Load data**
+   - Uses `DataLoader` to read `data/raw/WorldHappiness.csv`
+   - Prints shape, columns, and missing values per column
+2. **Clean data**
+   - Uses `DataCleaner.clean()` (same logic the Streamlit app uses)
+   - Saves cleaned CSV to `data/processed/cleaned_data.csv`
+3. **Analyze**
+   - Uses `Analyzer` to:
+     - print top countries by happiness
+     - print average happiness by region
+     - print top and bottom countries
+     - print key correlations with `Happiness Score`
+4. **Composite index**
+   - Uses `IndexCalculator` to:
+     - compute `Composite_Happiness_Index` and `Composite_Rank`
+     - print the top 10 countries by this index
+     - print basic index statistics (mean, median, std, etc.)
+5. **Visualizations**
+   - Uses `Visualizer` to create and save PNG files in `reports/`:
+     - `country_comparison.png`
+     - `region_comparison.png`
+     - `gdp_vs_happiness.png`
+     - `correlation_heatmap.png`
+     - `top_bottom_comparison.png`
+6. **Insights**
+   - Uses `InsightEngine` to generate rule‑based insights
+   - Prints them to the console
+   - Saves them to `reports/insights.txt`
 
-You can also use individual modules programmatically:
+At the end you get:
 
-```python
-from src.data_loader import DataLoader
-from src.data_cleaner import DataCleaner
-from src.analyzer import Analyzer
-from src.visualizer import Visualizer
-
-# Load data
-loader = DataLoader(data_path="data/raw")
-df = loader.load_csv("WorldHappiness.csv")
-
-# Clean data
-cleaner = DataCleaner(df)
-cleaned_df = cleaner.clean()
-
-# Analyze
-analyzer = Analyzer(cleaned_df)
-top_countries = analyzer.country_comparison(top_n=10)
-
-# Visualize
-visualizer = Visualizer(cleaned_df)
-visualizer.plot_country_comparison(top_n=15)
-```
-
-## 🔍 Features
-
-### 1. Data Loading (`data_loader.py`)
-- Loads CSV files with error handling
-- Provides dataset information and statistics
-- Supports flexible file paths
-
-### 2. Data Cleaning (`data_cleaner.py`)
-- Standardizes country and region names
-- Handles missing values (mean, median, or drop)
-- Removes duplicates
-- Validates cleaned data
-
-### 3. Analysis (`analyzer.py`)
-- **Country Comparison**: Top/bottom countries by happiness
-- **Regional Analysis**: Average happiness by region
-- **Correlation Analysis**: Pearson and Spearman correlations
-- **Trend Analysis**: Year-wise happiness trends
-- **Year-over-Year Changes**: Track country-specific changes
-
-### 4. Composite Index (`index_calculator.py`)
-- Min-Max normalization of indicators
-- Weighted composite happiness index
-- Comparison with original happiness scores
-- Customizable indicator weights
-
-### 5. Visualizations (`visualizer.py`)
-- **Bar Charts**: Country and region comparisons
-- **Line Charts**: Happiness trends over time
-- **Scatter Plots**: GDP vs Happiness correlation
-- **Heatmaps**: Correlation matrices
-- All plots are saved as high-resolution PNG files
-
-### 6. Insight Engine (`insight_engine.py`)
-- **High GDP, Low Happiness**: Identifies paradox cases
-- **Regional Trends**: Improving vs declining regions
-- **Stability Analysis**: Stable vs volatile countries
-- **Outlier Detection**: Statistical outliers
-- **Correlation Insights**: Freedom-happiness relationships
-- All insights are rule-based and explainable
-
-## 📈 Output Files
-
-After running the pipeline, you'll find:
-
-- `data/processed/cleaned_data.csv`: Cleaned dataset
-- `reports/country_comparison.png`: Top countries bar chart
-- `reports/region_comparison.png`: Regional averages chart
-- `reports/gdp_vs_happiness.png`: GDP-Happiness scatter plot
-- `reports/correlation_heatmap.png`: Correlation matrix
-- `reports/top_bottom_comparison.png`: Top vs bottom countries
-- `reports/insights.txt`: Generated insights report
-
-## 🎯 Key Insights Generated
-
-The insight engine automatically generates insights such as:
-
-- Countries with high GDP but low happiness scores
-- Regions showing improvement or decline over time
-- Countries with stable vs volatile happiness trends
-- Statistical outliers in happiness scores
-- Correlation patterns between indicators and happiness
-
-## 🖥️ Interactive Dashboard Features
-
-The Streamlit dashboard provides an intuitive interface with:
-
-### Navigation Pages
-- **Overview Dashboard**: Quick metrics and key visualizations
-- **Country Analysis**: Deep dive into individual countries
-- **Regional Analysis**: Compare regions and their distributions
-- **Correlation Analysis**: Explore relationships between variables
-- **Composite Index**: Calculate and compare custom happiness indices
-- **Insights**: Generate and view rule-based insights
-- **Data Explorer**: Browse and filter raw data
-
-### Interactive Features
-- **Filters**: Filter by region and select specific countries
-- **Sliders**: Adjust number of countries displayed
-- **Multi-select**: Choose multiple regions for comparison
-- **Search**: Search countries in the data explorer
-- **Custom Weights**: Configure composite index weights
-- **Download**: Export filtered data as CSV
-
-### Real-time Updates
-- All visualizations update based on selected filters
-- Instant insight generation
-- Dynamic chart rendering
-- Responsive layout for different screen sizes
-
-## 🛠️ Technical Details
-
-### Design Principles
-
-- **Object-Oriented Programming**: All modules use classes for clean organization
-- **Modular Design**: Each module has a single, clear responsibility
-- **Error Handling**: Comprehensive exception handling throughout
-- **Documentation**: Docstrings and comments for clarity
-- **No Machine Learning**: Pure statistical and rule-based analysis
-
-### Dependencies
-
-- **pandas**: Data manipulation and analysis
-- **numpy**: Numerical computations
-- **matplotlib**: Data visualization
-- **scipy**: Statistical functions (correlation)
-- **streamlit**: Interactive web application framework
-- **seaborn**: Enhanced statistical visualizations (optional, with fallback)
-
-## 📝 Code Quality
-
-- Clear class and method names
-- Comprehensive docstrings
-- Exception handling for robustness
-- Readable and maintainable code structure
-- Semester-appropriate complexity level
-
-## 🔬 Analysis Capabilities
-
-1. **Descriptive Statistics**: Mean, median, standard deviation
-2. **Comparative Analysis**: Country and regional comparisons
-3. **Correlation Analysis**: Relationships between variables
-4. **Trend Analysis**: Time-based patterns (if year data available)
-5. **Index Calculation**: Custom composite metrics
-6. **Insight Generation**: Automated pattern detection
-
-## 🎓 Educational Value
-
-This project demonstrates:
-
-- Data loading and preprocessing
-- Statistical analysis techniques
-- Data visualization best practices
-- Object-oriented Python programming
-- Rule-based insight generation
-- Clean code organization
-
-## ⚠️ Notes
-
-- The dataset should be placed in `data/raw/WorldHappiness.csv`
-- If the dataset doesn't have a 'Year' column, year-based analyses will be skipped
-- All visualizations are saved automatically to the `reports/` directory
-- The composite index uses equal weights by default (customizable)
-
-## 📧 Support
-
-For questions or issues:
-1. Check that all dependencies are installed
-2. Verify the dataset is in the correct location
-3. Ensure Python 3.8+ is being used
-
-## 📄 License
-
-This project is created for educational purposes as part of a semester-level data analytics course.
+- `data/processed/cleaned_data.csv` – cleaned dataset
+- multiple charts in `reports/`
+- `reports/insights.txt` – simple text insights
 
 ---
 
-**Happy Analyzing! 🌍😊**
+## 📝 Summary
+
+- Use **Streamlit** (`streamlit_app.py`) for an interactive dashboard with filters, charts,
+  and tables.
+- Use **`python src/main.py`** to run the full analysis once and generate all files.
+
+Both paths share the same underlying modules, so the numbers and logic are consistent
+between the UI and the command‑line run. If you change a module (for example,
+`Analyzer` or `IndexCalculator`), update this README so it keeps matching the code. 
+
 

@@ -32,32 +32,14 @@ class Visualizer:
         plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
         plt.show()
 
-    def plot_happiness_trends(self, year_column='Year', countries=None, filename="happiness_trends.png"):
-        if year_column not in self.df.columns or 'Happiness Score' not in self.df.columns: return
-        plt.figure(figsize=(10,6))
-        if countries is None:
-            avg = self.df.groupby(year_column)['Happiness Score'].mean()
-            plt.plot(avg.index, avg.values, marker='o', label="Global Average")
-        else:
-            for country in countries:
-                d = self.df[self.df['Country']==country]
-                plt.plot(d[year_column], d['Happiness Score'], marker='o', label=country)
-        plt.xlabel('Year')
-        plt.ylabel('Happiness Score')
-        plt.title('Happiness Trends Over Time')
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
-        plt.show()
-
     def plot_gdp_vs_happiness(self, filename="gdp_vs_happiness.png"):
         gdp_col = 'Economy (GDP per Capita)'
         if gdp_col not in self.df.columns or 'Happiness Score' not in self.df.columns: return
         x = self.df[gdp_col]
         y = self.df['Happiness Score']
         plt.scatter(x, y, c=y, cmap='viridis', edgecolors='black', alpha=0.6)
-        z = np.polyfit(x, y, 1)
-        plt.plot(x, np.poly1d(z)(x), "r--")
+        # z = np.polyfit(x, y, 1)
+        # plt.plot(x, np.poly1d(z)(x), "r--")
         plt.xlabel('GDP per Capita')
         plt.ylabel('Happiness Score')
         plt.title('GDP vs Happiness Score')

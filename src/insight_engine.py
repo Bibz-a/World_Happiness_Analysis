@@ -20,41 +20,8 @@ class InsightEngine:
         self.insights.append(text)
         return sel
 
-    def analyze_regional_trends(self, year_column='Year'):
-        if year_column not in self.df or 'Region' not in self.df or 'Happiness Score' not in self.df:
-            return {'improving': [], 'declining': []}
-        improving, declining = [], []
-        for reg in self.df['Region'].unique():
-            d = self.df[self.df['Region'] == reg].sort_values(year_column)
-            if len(d) > 1:
-                diff = d.iloc[-1]['Happiness Score'] - d.iloc[0]['Happiness Score']
-                if diff > 0.1:
-                    improving.append(reg)
-                elif diff < -0.1:
-                    declining.append(reg)
-        if improving:
-            self.insights.append(f"Regions improving: {', '.join(improving)}")
-        if declining:
-            self.insights.append(f"Regions declining: {', '.join(declining)}")
-        return {'improving': improving, 'declining': declining}
-
-    def identify_stable_vs_volatile(self, year_column='Year', stability_threshold=0.2):
-        if year_column not in self.df or 'Country' not in self.df or 'Happiness Score' not in self.df:
-            return {'stable': [], 'volatile': []}
-        stable, volatile = [], []
-        for c in self.df['Country'].unique():
-            d = self.df[self.df['Country'] == c].sort_values(year_column)
-            if len(d) > 1:
-                std = d['Happiness Score'].std()
-                if std <= stability_threshold:
-                    stable.append(c)
-                elif std >= stability_threshold * 2:
-                    volatile.append(c)
-        if stable:
-            self.insights.append(f"Stable happiness (std ≤ {stability_threshold}): {', '.join(stable[:5])}")
-        if volatile:
-            self.insights.append(f"Volatile happiness (std ≥ {stability_threshold*2}): {', '.join(volatile[:5])}")
-        return {'stable': stable, 'volatile': volatile}
+    # Year-based regional/stability analysis has been removed because
+    # the current dataset does not contain a Year column.
 
     def find_happiness_outliers(self, method='iqr'):
         if 'Happiness Score' not in self.df:
@@ -100,8 +67,7 @@ class InsightEngine:
     def generate_all_insights(self):
         self.insights = []
         self.find_high_gdp_low_happiness()
-        # Removed analyze_regional_trends() - not needed in insights
-        self.identify_stable_vs_volatile()
+        # Year-based regional/stability trends removed (no Year column)
         self.find_happiness_outliers()
         self.analyze_freedom_happiness_correlation()
         self.find_high_generosity_low_happiness()

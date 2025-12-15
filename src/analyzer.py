@@ -75,19 +75,6 @@ class Analyzer:
         spearman, _ = spearmanr(data[column], data['Happiness Score'])
         return {'pearson': pearson, 'spearman': spearman}
 
-    def year_trend(self, year_col='Year'):
-        # Get average happiness for each year
-        if year_col not in self.df.columns:
-            return None
-        return self.df.groupby(year_col)['Happiness Score'].mean()
-
-    def year_change_for_country(self, country, year_col='Year'):
-        # Compute change in happiness from first year to last for a country
-        df_c = self.df[self.df['Country'] == country].sort_values(year_col)
-        if len(df_c) < 2:
-            return None
-        return df_c['Happiness Score'].iloc[-1] - df_c['Happiness Score'].iloc[0]
-
     def summary_stats(self):
         # Get summary stats for all numeric columns
         return self.df.describe()

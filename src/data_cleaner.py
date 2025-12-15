@@ -30,10 +30,10 @@ class DataCleaner:
                     self.df.dropna(subset=[col], inplace=True)
         return self
 
-    def standardize_year_format(self, year_column='Year'):
-        if year_column in self.df.columns:
-            self.df[year_column] = pd.to_numeric(self.df[year_column], errors='coerce')
-        return self
+    # def standardize_year_format(self, year_column='Year'):
+    #     if year_column in self.df.columns:
+    #         self.df[year_column] = pd.to_numeric(self.df[year_column], errors='coerce')
+    #     return self
 
     def remove_duplicates(self):
         self.df = self.df.drop_duplicates()
@@ -43,7 +43,6 @@ class DataCleaner:
         self.standardize_country_names()\
             .standardize_region_names()\
             .handle_missing_values()\
-            .standardize_year_format()\
             .remove_duplicates()
         self.cleaned_df = self.df.copy()
         return self.cleaned_df
