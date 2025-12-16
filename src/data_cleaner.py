@@ -39,6 +39,22 @@ class DataCleaner:
         self.df = self.df.drop_duplicates()
         return self
 
+    def validate_data(self):
+        """
+        Simple validation summary used by the CLI:
+        - total rows
+        - total columns
+        - missing values per column
+        """
+        total_rows = len(self.df)
+        total_cols = self.df.shape[1]
+        missing = self.df.isnull().sum().to_dict()
+        return {
+            "total_rows": total_rows,
+            "total_columns": total_cols,
+            "missing_values": missing,
+        }
+
     def clean(self):
         self.standardize_country_names()\
             .standardize_region_names()\

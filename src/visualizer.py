@@ -10,7 +10,7 @@ class Visualizer:
         os.makedirs(output_dir, exist_ok=True)
         plt.style.use('seaborn-v0_8-darkgrid')
 
-    def plot_country_comparison(self, top_n=15, filename="country_comparison.png"):
+    def plot_country_comparison(self, top_n=15, filename="country_comparison.png", save=True):
         if 'Happiness Score' not in self.df.columns: return
         top_countries = self.df.nlargest(top_n, 'Happiness Score')
         plt.barh(top_countries['Country'], top_countries['Happiness Score'], color='steelblue')
@@ -18,10 +18,11 @@ class Visualizer:
         plt.title(f'Top {top_n} Countries by Happiness Score')
         plt.gca().invert_yaxis()
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
+        if save:
+            plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
         plt.show()
 
-    def plot_region_comparison(self, filename="region_comparison.png"):
+    def plot_region_comparison(self, filename="region_comparison.png", save=True):
         if 'Region' not in self.df.columns or 'Happiness Score' not in self.df.columns: return
         regional_avg = self.df.groupby('Region')['Happiness Score'].mean().sort_values(ascending=False)
         plt.barh(regional_avg.index, regional_avg.values, color='coral')
@@ -29,10 +30,11 @@ class Visualizer:
         plt.title('Average Happiness Score by Region')
         plt.gca().invert_yaxis()
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
+        if save:
+            plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
         plt.show()
 
-    def plot_gdp_vs_happiness(self, filename="gdp_vs_happiness.png"):
+    def plot_gdp_vs_happiness(self, filename="gdp_vs_happiness.png", save=True):
         gdp_col = 'Economy (GDP per Capita)'
         if gdp_col not in self.df.columns or 'Happiness Score' not in self.df.columns: return
         x = self.df[gdp_col]
@@ -44,22 +46,34 @@ class Visualizer:
         plt.ylabel('Happiness Score')
         plt.title('GDP vs Happiness Score')
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
+        if save:
+            plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
         plt.show()
 
-    def plot_correlation_heatmap(self, filename="correlation_heatmap.png"):
+    def plot_correlation_heatmap(self, method="pearson", filename="correlation_heatmap.png", save=True):
+        """
+        Plot a correlation heatmap for all numeric columns.
+
+        Parameters
+        ----------
+        method : str
+            Correlation method to use ('pearson', 'spearman', 'kendall', etc.)
+        """
         num = self.df.select_dtypes(include=[np.number])
-        corr = num.corr()
+        if num.empty:
+            return
+        corr = num.corr(method=method)
         plt.imshow(corr, cmap="coolwarm", vmin=-1, vmax=1)
         plt.colorbar()
         plt.xticks(range(len(corr)), corr.columns, rotation=45, ha='right')
         plt.yticks(range(len(corr)), corr.columns)
         plt.title('Correlation Heatmap')
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
+        if save:
+            plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
         plt.show()
 
-    def plot_top_bottom_comparison(self, top_n=10, bottom_n=10, filename="top_bottom_comparison.png"):
+    def plot_top_bottom_comparison(self, top_n=10, bottom_n=10, filename="top_bottom_comparison.png", save=True):
         if 'Happiness Score' not in self.df.columns: return
         top = self.df.nlargest(top_n, 'Happiness Score')
         bottom = self.df.nsmallest(bottom_n, 'Happiness Score')
@@ -72,5 +86,6 @@ class Visualizer:
         axes[1].invert_yaxis()
         plt.suptitle('Top vs Bottom Countries by Happiness Score')
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
+        if save:
+            plt.savefig(os.path.join(self.output_dir, filename), dpi=200)
         plt.show()
